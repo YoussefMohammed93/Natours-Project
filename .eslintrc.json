@@ -6,7 +6,7 @@
   ],
   "plugins": ["prettier"],
   "settings": {
-    "node/version": ">=8.3.0"
+    "node/version": ">=7.6.0"
   },
   "rules": {
     "prettier/prettier": "error",
@@ -20,6 +20,7 @@
     "no-return-await": "off",
     "no-underscore-dangle": "off",
     "class-methods-use-this": "off",
+    "node/no-unsupported-features/es-syntax": "off",
     "prefer-destructuring": [
       "error",
       { "object": true, "array": false }
