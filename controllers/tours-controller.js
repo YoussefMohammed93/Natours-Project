@@ -2,6 +2,7 @@ const Tour = require("../models/tour-model");
 
 exports.getAllTours = async (req, res) => {
   try {
+    // Filtering
     const queryObj = { ...req.query };
     const excludedFields = [
       "page",
@@ -14,6 +15,7 @@ exports.getAllTours = async (req, res) => {
       element => delete queryObj[element]
     );
 
+    // Advanced Filtering
     let queryStr = JSON.stringify(queryObj);
 
     queryStr = queryStr.replace(
@@ -21,7 +23,37 @@ exports.getAllTours = async (req, res) => {
       match => `$${match}`
     );
 
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    // Field Limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(",").join(" ");
+      query = query.select(fields);
+    } else {
+      query = query.select("-__v");
+    }
+
+    // Pagination
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const toursNum = await Tour.countDocuments();
+      if (skip >= toursNum) {
+        throw new Error("This page doesn't exist");
+      }
+    }
 
     const tours = await query;
 
@@ -138,4 +170,13 @@ exports.deleteTour = async (req, res) => {
       message: err.message
     });
   }
+};
+
+exports.aliasTopTours = async (req, res, next) => {
+  req.query.limit = "5";
+  req.query.sort = "-ratingsAverage,price";
+  req.query.fields =
+    "name,price,ratingsAverage,summary,difficulty";
+
+  next();
 };

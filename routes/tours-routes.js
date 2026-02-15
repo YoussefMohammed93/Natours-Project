@@ -4,6 +4,13 @@ const toursController = require("../controllers/tours-controller");
 const router = express.Router();
 
 router
+  .route("/top-5-cheap")
+  .get(
+    toursController.aliasTopTours,
+    toursController.getAllTours
+  );
+
+router
   .route("/")
   .get(toursController.getAllTours)
   .post(toursController.createTour);
